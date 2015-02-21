@@ -1,0 +1,2 @@
+include ':app'
+include  ':Beacon', ':metaioSDK_601'
