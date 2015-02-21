@@ -61,13 +61,15 @@ public class DistanceBeaconActivity extends Activity {
 animatedArrowRight.setAnimatedGif(R.raw.arrow_anim,
                 AnimatedGifImageView.TYPE.AS_IS);
 
-        getActionBar().setSubtitle("Get closer to the object to receive more information");
 
         //Gets the image that should be the target
         SharedPreferences sp = PreferenceManager
                 .getDefaultSharedPreferences(DistanceBeaconActivity.this);
         String image_resource = sp.getString("image_resource", "");
+        String exponat_name = sp.getString("exponat_name", "");
         ImageView image_exponat = (ImageView) findViewById(R.id.exponatView);
+        getActionBar().setTitle(exponat_name);
+        getActionBar().setSubtitle("Get closer to the object to receive more information");
         int id = getResources().getIdentifier("polimi.dima.museumdemo:drawable/" + image_resource, null, null);
         image_exponat.setImageResource(id);
         beacon = getIntent().getParcelableExtra(ListBeaconsActivity.EXTRAS_BEACON);

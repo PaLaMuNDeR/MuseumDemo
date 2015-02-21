@@ -56,6 +56,7 @@ public class ListBeaconsActivity extends Activity {
 
 
     private static final String TAG_NAME = "name";
+    private static final String TAG_DESCRIPTION = "description";
     private static final String TAG_IMAGE = "image";
     private static final String TAG_BEACON_MAC = "beaconMac";
     private static final String TAG_TRACKING_DATA = "trackingData";
@@ -241,8 +242,9 @@ public class ListBeaconsActivity extends Activity {
                             .getDefaultSharedPreferences(ListBeaconsActivity.this);
                     SharedPreferences.Editor edit = sp.edit();
                     Log.d("image", adapter.getImage(view));
-                    edit.putString("image_resource", adapter.getImage(view));
                     edit.putInt("exponat_id", adapter.getExponatId(view));
+                    edit.putString("exponat_name",adapter.getExponatName(view));
+                    edit.putString("image_resource", adapter.getImage(view));
                     Log.d("database", "exponat_id=" + adapter.getExponatId(view));
                     edit.commit();
 
@@ -295,6 +297,7 @@ public class ListBeaconsActivity extends Activity {
 
                 // gets the content of each tag
                 String name = c.getString(TAG_NAME);
+                String description = c.getString(TAG_DESCRIPTION);
                 String image = c.getString(TAG_IMAGE);
                 String beaconMac = c.getString(TAG_BEACON_MAC);
                 String trackingData = c.getString(TAG_TRACKING_DATA);
@@ -304,12 +307,13 @@ public class ListBeaconsActivity extends Activity {
 
 
                 Log.d("Database", "Inserting...");
-                db.addExponat(new Exponat(name, image, beaconMac, trackingData, target, type, model));
+                db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
                 // creating new HashMap
                 HashMap<String, String> map = new HashMap<String, String>();
 
                 // map.put(TAG_POI_ID, poi_id);
                 map.put(TAG_NAME, name);
+                map.put(TAG_DESCRIPTION, description);
                 map.put(TAG_IMAGE, image);
                 map.put(TAG_BEACON_MAC, beaconMac);
                 map.put(TAG_TRACKING_DATA, trackingData);

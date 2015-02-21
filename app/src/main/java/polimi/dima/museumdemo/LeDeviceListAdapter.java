@@ -92,15 +92,29 @@ public class LeDeviceListAdapter extends BaseAdapter {
             String b_mac_db = ex.getBeaconMac();
 
             if (beacon.getMacAddress().equals(b_mac_db)) {
+                //Extract the name from the DB
                 String name_value = ex.getName();
-                holder.macTextView.setText(String.format("%s (%.2fm)", name_value, Utils.computeAccuracy(beacon)));
+                //Set the name of the view to the name from the DB
+                holder.macTextResource=name_value;
+                holder.macTextView.setText(String.format("%s (%.2fm)", holder.macTextResource, Utils.computeAccuracy(beacon)));
+                //Extract the description from the DB
+                String description = ex.getDescription();
+                //Sets the description
+                holder.descriptionTextView.setText(description);
+                //Extract the id from the DB
                 int id = ex.getId();
+                //Set the macId of the holder
                 holder.macId = id;
+                //Extract the image location from the DB
                 image_value = ex.getImage();
+                //Set the image of the object
                 holder.macImageResource = image_value;
                 int image_source = mContext.getResources().getIdentifier("polimi.dima.museumdemo:drawable/" + image_value, null, null);
                 holder.macImageView.setImageResource(image_source);
+                //Sets that the holder is acknowledged to continue to the next activity
                 holder.macContinueBool = Boolean.TRUE;
+
+
                 //This break assures that it will not check the other rows
                 //Do not touch it, otherwise the views will be all mixed around
                 break;
@@ -128,13 +142,16 @@ public class LeDeviceListAdapter extends BaseAdapter {
     //Every row in our list
     public class ViewHolder {
         final TextView macTextView;
+        final TextView descriptionTextView;
         final ImageView macImageView;
         public String macImageResource;
+        public String macTextResource;
         public Boolean macContinueBool;
         public int macId;
 
         ViewHolder(View view) {
             macTextView = (TextView) view.findViewWithTag("mac");
+            descriptionTextView = (TextView) view.findViewWithTag("description");
             macImageView = (ImageView) view.findViewWithTag("image");
             macId = 0;
         }
@@ -209,6 +226,11 @@ public class LeDeviceListAdapter extends BaseAdapter {
         ViewHolder holder = (ViewHolder) view.getTag();
         String image_resource = holder.macImageResource;
         return image_resource;
+    }
+    public String getExponatName(View view) {
+        ViewHolder holder = (ViewHolder) view.getTag();
+        String exponat_name = holder.macTextResource;
+        return exponat_name;
     }
 
     public Integer getExponatId(View view) {

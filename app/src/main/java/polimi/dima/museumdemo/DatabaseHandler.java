@@ -29,6 +29,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // Contacts Table Columns names
     private static final String KEY_ID = "id";
     private static final String KEY_NAME = "name";
+    private static final String KEY_DESCRIPTION = "description";
     private static final String KEY_IMAGE = "image";
     private static final String KEY_BEACON_MAC = "beaconMac";
     private static final String KEY_TRACKING_DATA = "trackingData";
@@ -54,9 +55,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String CREATE_CONTACTS_TABLE = "CREATE TABLE " + TABLE_EXPONATS + "(" +
                 KEY_ID + " INTEGER PRIMARY KEY," + KEY_NAME + " TEXT," +
-                KEY_IMAGE + " TEXT," + KEY_BEACON_MAC + " TEXT," +
-                KEY_TRACKING_DATA + " TEXT," + KEY_TARGET + " TEXT," +
-                KEY_TYPE + " TEXT," + KEY_MODEL + " TEXT" + ")";
+                KEY_DESCRIPTION + " TEXT," + KEY_IMAGE + " TEXT," +
+                KEY_BEACON_MAC + " TEXT," + KEY_TRACKING_DATA + " TEXT," +
+                KEY_TARGET + " TEXT," + KEY_TYPE + " TEXT," + KEY_MODEL + " TEXT" + ")";
         db.execSQL(CREATE_CONTACTS_TABLE);
     }
 
@@ -77,13 +78,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_NAME, exponat.getName()); // Contact Name
-        values.put(KEY_IMAGE, exponat.getImage()); // Contact Name
-        values.put(KEY_BEACON_MAC, exponat.getBeaconMac()); // Contact Name
-        values.put(KEY_TRACKING_DATA, exponat.getTrackingData()); // Contact Name
-        values.put(KEY_TARGET, exponat.getTarget()); // Contact Name
-        values.put(KEY_TYPE, exponat.getType()); // Contact Name
-        values.put(KEY_MODEL, exponat.getModel()); // Contact Phone Number
+        values.put(KEY_NAME, exponat.getName()); // Exponat Name
+        values.put(KEY_DESCRIPTION, exponat.getDescription()); // Exponat Description
+        values.put(KEY_IMAGE, exponat.getImage()); // Exponat Image
+        values.put(KEY_BEACON_MAC, exponat.getBeaconMac()); // Beacon's Mac
+        values.put(KEY_TRACKING_DATA, exponat.getTrackingData()); // TrackingData file for Metaio
+        values.put(KEY_TARGET, exponat.getTarget()); // Target for Metaio
+        values.put(KEY_TYPE, exponat.getType()); // Type of the AR object
+        values.put(KEY_MODEL, exponat.getModel()); // The AR Object
 
         // Inserting Row
         db.insert(TABLE_EXPONATS, null, values);
@@ -96,13 +98,16 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_EXPONATS, new String[]{KEY_ID,
-                        KEY_NAME, KEY_IMAGE, KEY_BEACON_MAC, KEY_TRACKING_DATA, KEY_TARGET, KEY_TYPE, KEY_MODEL}, KEY_ID + "=?",
+                        KEY_NAME, KEY_DESCRIPTION,
+                        KEY_IMAGE, KEY_BEACON_MAC,
+                        KEY_TRACKING_DATA, KEY_TARGET,
+                        KEY_TYPE, KEY_MODEL}, KEY_ID + "=?",
                 new String[]{String.valueOf(id)}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
 
         Exponat exponat = new Exponat(Integer.parseInt(cursor.getString(0)),
-                cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7));
+                cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7), cursor.getString(8));
         // return contact
         return exponat;
     }
@@ -122,12 +127,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 Exponat exponat = new Exponat();
                 exponat.setId(Integer.parseInt(cursor.getString(0)));
                 exponat.setName(cursor.getString(1));
-                exponat.setImage(cursor.getString(2));
-                exponat.setBeaconMac(cursor.getString(3));
-                exponat.setTrackingData(cursor.getString(4));
-                exponat.setTarget(cursor.getString(5));
-                exponat.setType(cursor.getString(6));
-                exponat.setModel(cursor.getString(7));
+                exponat.setDescription(cursor.getString(2));
+                exponat.setImage(cursor.getString(3));
+                exponat.setBeaconMac(cursor.getString(4));
+                exponat.setTrackingData(cursor.getString(5));
+                exponat.setTarget(cursor.getString(6));
+                exponat.setType(cursor.getString(7));
+                exponat.setModel(cursor.getString(8));
 
                 // Adding contact to list
                 exponatList.add(exponat);
@@ -156,6 +162,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(KEY_NAME, exponat.getName());
+        values.put(KEY_DESCRIPTION, exponat.getDescription());
         values.put(KEY_IMAGE, exponat.getName());
         values.put(KEY_BEACON_MAC, exponat.getName());
         values.put(KEY_TRACKING_DATA, exponat.getName());
