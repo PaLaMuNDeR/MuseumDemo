@@ -1,13 +1,13 @@
-{"version":"1",
+{"version":"2",
 "exponats":
  [
     {
         "name": "Mona Lisa",
         "description": "The most famous painting of all times",
         "image": "exponat_1_image",
-        "beaconMac": "CE:94:FB:D0:DB:16",
         "trackingData": "TrackingData_MarkerlessFast.xml",
         "target": "mona_target",
+        "beaconMac": "CE:94:FB:D0:DB:16",
         "type": "Video",
         "model": "mona_rotated.3gp"
     },

@@ -1,5 +1,6 @@
 package polimi.dima.museumdemo;
 
+import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -61,11 +62,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 KEY_ID + " INTEGER PRIMARY KEY," + KEY_NAME + " TEXT," +
                 KEY_DESCRIPTION + " TEXT," + KEY_IMAGE + " TEXT," +
                 KEY_BEACON_MAC + " TEXT," + KEY_TRACKING_DATA + " TEXT," +
-                KEY_TARGET + " TEXT," + KEY_TYPE + " TEXT," + KEY_MODEL + " TEXT" + "); " +
-        //CREATE_VERSION_TABLE
-                "CREATE TABLE" + TABLE_VERSION + "(" +
-                KEY_ID + " INTEGER PRIMARY KEY," + KEY_VERSION + " INTEGER" +")";
+                KEY_TARGET + " TEXT," + KEY_TYPE + " TEXT," + KEY_MODEL + " TEXT" + ")";
         db.execSQL(CREATE_EXPONATS_TABLE);
+        String CREATE_VERSION_TABLE="CREATE TABLE " + TABLE_VERSION + "(" +
+                KEY_ID + " INTEGER PRIMARY KEY," + KEY_VERSION + " INTEGER" +")";
+        db.execSQL(CREATE_VERSION_TABLE);
     }
 
     // Upgrading database
@@ -141,11 +142,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String selectQuery = "SELECT  * FROM " + TABLE_EXPONATS;
 
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+                Cursor cursor = db.rawQuery(selectQuery, null);
 
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
+                // looping through all rows and adding to list
+                if (cursor.moveToFirst()) {
+                    do {
                 Exponat exponat = new Exponat();
                 exponat.setId(Integer.parseInt(cursor.getString(0)));
                 exponat.setName(cursor.getString(1));
@@ -168,18 +169,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // Getting Last version
     public VersionVerifier getLastVersion() {
-        SQLiteDatabase db = this.getReadableDatabase();
+        //SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = this.getWritableDatabase();
 
-        Cursor cursor = db.query(TABLE_VERSION, new String[]{KEY_ID,
-                        KEY_VERSION}, KEY_ID + "= (SELECT " + KEY_ID + " FROM " + TABLE_VERSION +
-                " ORDER BY " + KEY_ID + " DESC " +
-                "LIMIT 1" , null, null, null, null);
-        if (cursor != null)
-            cursor.moveToFirst();
+        String selectQuery = "SELECT * FROM " + TABLE_VERSION + " ORDER BY " + KEY_ID +" DESC LIMIT 1";
+        Cursor cursor = db.rawQuery(selectQuery, null);
 
-        VersionVerifier versionVerifier = new VersionVerifier(Integer.parseInt(cursor.getString(0)),
-                cursor.getInt(1));
-        // return exponat
+        VersionVerifier versionVerifier = new VersionVerifier();
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+        versionVerifier.setId(Integer.parseInt(cursor.getString(0)));
+        versionVerifier.setVersion(Integer.parseInt(cursor.getString(1)));
+        } while (cursor.moveToNext());
+}
         return versionVerifier;
     }
 
@@ -221,5 +224,18 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.delete(TABLE_EXPONATS, KEY_ID + " = ?",
                 new String[] { String.valueOf(exponat.getId()) });
         db.close();
+    }
+
+    //New version
+    public void flushOnNewVersion() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        // Drop older table if existed
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_EXPONATS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VERSION);
+
+//       setDATABASE_VERSION(newVersion);
+        //      Log.d("Database", "DB Update. Version set to: " + newVersion);
+        // Create tables again
+        onCreate(db);
     }
 }

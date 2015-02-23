@@ -344,6 +344,10 @@ public class ListBeaconsActivity extends Activity {
                 VersionVerifier vf = db.getLastVersion();
                 Log.d("Database", "Old version: " + vf.version);
                 if(version!=vf.version) {
+                    //Cleans the database
+                    db.flushOnNewVersion();
+                    Log.d("Database","Database flushed");
+                    //populates it again
                     mExponats = json.getJSONArray("exponats");
                     for (int i = 0; i < mExponats.length(); i++) {
                         JSONObject c = mExponats.getJSONObject(i);
