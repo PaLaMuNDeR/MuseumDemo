@@ -107,6 +107,18 @@ public class ListBeaconsActivity extends Activity {
         });
     }
 
+    public void checkFirstRun() {
+        boolean isFirstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("isFirstRun", true);
+        if (isFirstRun){
+            // Place your dialog code here to display the dialog
+
+            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("isFirstRun", false)
+                    .apply();
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.scan_menu, menu);
@@ -284,54 +296,105 @@ public class ListBeaconsActivity extends Activity {
 
             JSONObject json = new JSONObject(string);
 
+            boolean isFirstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("isFirstRun", true);
             int version = json.getInt("version");
+            if(isFirstRun) {
+                mExponats = json.getJSONArray("exponats");
+                for (int i = 0; i < mExponats.length(); i++) {
+                    JSONObject c = mExponats.getJSONObject(i);
+
+                    // gets the content of each tag
+                    String name = c.getString(TAG_NAME);
+                    String description = c.getString(TAG_DESCRIPTION);
+                    String image = c.getString(TAG_IMAGE);
+                    String beaconMac = c.getString(TAG_BEACON_MAC);
+                    String trackingData = c.getString(TAG_TRACKING_DATA);
+                    String target = c.getString(TAG_TARGET);
+                    String type = c.getString(TAG_TYPE);
+                    String model = c.getString(TAG_MODEL);
 
 
-            Log.d("Database","Dropping database...");
-            db.onUpgrade(db.getWritableDatabase(),db.getDATABASE_VERSION(),version);
-            Log.d("Database","Creating database...");
+                    Log.d("Database", "Inserting...");
+                    db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
+                    // creating new HashMap
+                    HashMap<String, String> map = new HashMap<String, String>();
 
-            mExponats = json.getJSONArray("exponats");
-            for (int i = 0; i < mExponats.length(); i++) {
-                JSONObject c = mExponats.getJSONObject(i);
+                    // map.put(TAG_POI_ID, poi_id);
+                    map.put(TAG_NAME, name);
+                    map.put(TAG_DESCRIPTION, description);
+                    map.put(TAG_IMAGE, image);
+                    map.put(TAG_BEACON_MAC, beaconMac);
+                    map.put(TAG_TRACKING_DATA, trackingData);
+                    map.put(TAG_TARGET, target);
+                    map.put(TAG_TYPE, type);
+                    map.put(TAG_MODEL, model);
 
-                // gets the content of each tag
-                String name = c.getString(TAG_NAME);
-                String description = c.getString(TAG_DESCRIPTION);
-                String image = c.getString(TAG_IMAGE);
-                String beaconMac = c.getString(TAG_BEACON_MAC);
-                String trackingData = c.getString(TAG_TRACKING_DATA);
-                String target = c.getString(TAG_TARGET);
-                String type = c.getString(TAG_TYPE);
-                String model = c.getString(TAG_MODEL);
+                    // adding HashList to ArrayList
+                    mExponatsList.add(map);
+
+                    // annndddd, our JSON data is up to date same with our array
+                    // list
+                    Log.d("hashmap", "One more added");
+                }
+                db.addVersion(new VersionVerifier(version));
+                Log.d("Database", "New version added: " + version);
+            }
+                else{
+                Log.d("Database", "JSON version: " + version);
+                VersionVerifier vf = db.getLastVersion();
+                Log.d("Database", "Old version: " + vf.version);
+                if(version!=vf.version) {
+                    mExponats = json.getJSONArray("exponats");
+                    for (int i = 0; i < mExponats.length(); i++) {
+                        JSONObject c = mExponats.getJSONObject(i);
+
+                        // gets the content of each tag
+                        String name = c.getString(TAG_NAME);
+                        String description = c.getString(TAG_DESCRIPTION);
+                        String image = c.getString(TAG_IMAGE);
+                        String beaconMac = c.getString(TAG_BEACON_MAC);
+                        String trackingData = c.getString(TAG_TRACKING_DATA);
+                        String target = c.getString(TAG_TARGET);
+                        String type = c.getString(TAG_TYPE);
+                        String model = c.getString(TAG_MODEL);
 
 
-                Log.d("Database", "Inserting...");
-                db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
-                // creating new HashMap
-                HashMap<String, String> map = new HashMap<String, String>();
+                        Log.d("Database", "Inserting...");
+                        db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
+                        // creating new HashMap
+                        HashMap<String, String> map = new HashMap<String, String>();
 
-                // map.put(TAG_POI_ID, poi_id);
-                map.put(TAG_NAME, name);
-                map.put(TAG_DESCRIPTION, description);
-                map.put(TAG_IMAGE, image);
-                map.put(TAG_BEACON_MAC, beaconMac);
-                map.put(TAG_TRACKING_DATA, trackingData);
-                map.put(TAG_TARGET, target);
-                map.put(TAG_TYPE, type);
-                map.put(TAG_MODEL, model);
+                        // map.put(TAG_POI_ID, poi_id);
+                        map.put(TAG_NAME, name);
+                        map.put(TAG_DESCRIPTION, description);
+                        map.put(TAG_IMAGE, image);
+                        map.put(TAG_BEACON_MAC, beaconMac);
+                        map.put(TAG_TRACKING_DATA, trackingData);
+                        map.put(TAG_TARGET, target);
+                        map.put(TAG_TYPE, type);
+                        map.put(TAG_MODEL, model);
 
-                // adding HashList to ArrayList
-                mExponatsList.add(map);
+                        // adding HashList to ArrayList
+                        mExponatsList.add(map);
 
-                // annndddd, our JSON data is up to date same with our array
-                // list
-                //TODO Remove
-                Log.d("hashmap", "One more added");
+                        // annndddd, our JSON data is up to date same with our array
+                        // list
+                        Log.d("hashmap", "One more added");
+                    }
+                    db.addVersion(new VersionVerifier(version));
+                    Log.d("Database", "New version added: " + version);
+                }
 
 
             }
 
+
+
+
+            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("isFirstRun", false)
+                    .apply();
         } catch (JSONException e) {
             e.printStackTrace();
 
@@ -340,7 +403,7 @@ public class ListBeaconsActivity extends Activity {
 
 
         Log.d("hashmap", mExponatsList.toString());
-// Reading all contacts
+// Reading all exponats
         Log.d("Database", "Reading all exponats..");
         List<Exponat> exponats = db.getAllExponats();
         for (Exponat ex : exponats) {

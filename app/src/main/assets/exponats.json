@@ -4,7 +4,8 @@
     {
         "name": "Mona Lisa",
         "description": "The most famous painting of all times",
-        "image": "exponat_1_image",        "beaconMac": "CE:94:FB:D0:DB:16",
+        "image": "exponat_1_image",
+        "beaconMac": "CE:94:FB:D0:DB:16",
         "trackingData": "TrackingData_MarkerlessFast.xml",
         "target": "mona_target",
         "type": "Video",
@@ -14,9 +15,8 @@
 
         "name": "Virtual Room",
         "description": "A room full of virtual objects",
-        "image": "virtual_room",        "beaconMac": "E3:82:A7:F7:DD:E5",
-
-
+        "image": "virtual_room",
+        "beaconMac": "E3:82:A7:F7:DD:E5",
         "trackingData": "TrackingData_MarkerlessFast.xml",
         "target": "scan_target",
         "type": "3D",
