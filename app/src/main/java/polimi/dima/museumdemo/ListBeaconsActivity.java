@@ -1,6 +1,8 @@
 package polimi.dima.museumdemo;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -267,6 +269,9 @@ public class ListBeaconsActivity extends Activity {
             }
         };
     }
+
+
+
     private void JSONParserToDB(){
         DatabaseHandler db = new DatabaseHandler(ListBeaconsActivity.this);
         // Hashmap for ListView
@@ -285,6 +290,13 @@ public class ListBeaconsActivity extends Activity {
         db.onUpgrade(db.getWritableDatabase(),1,2);
 
         Log.d("Database","Creating new db...");*/
+
+
+
+
+
+
+
 
 
         mExponatsList = new ArrayList<HashMap<String, String>>();
