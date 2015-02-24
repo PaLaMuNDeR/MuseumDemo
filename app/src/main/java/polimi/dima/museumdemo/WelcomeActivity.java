@@ -59,7 +59,6 @@ public class WelcomeActivity extends Activity {
              * Show Progress bar click event
              * */
             btnShowProgress.setOnClickListener(new View.OnClickListener() {
-
                 @Override
                 public void onClick(View v) {
                     // starting new Async Task
