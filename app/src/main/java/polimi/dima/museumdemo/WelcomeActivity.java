@@ -37,9 +37,9 @@ public class WelcomeActivity extends Activity {
     Button btnLoadImage;
     Button btnContinue;
 
+    ImageView my_image;
     // Progress Dialog
     private ProgressDialog pDialog;
-    ImageView my_image;
     // Progress dialog type (0 - for Horizontal progress bar)
     public static final int progress_bar_type = 0;
     //The JSON file with the version

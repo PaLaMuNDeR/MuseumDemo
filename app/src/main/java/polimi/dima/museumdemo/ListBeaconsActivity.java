@@ -2,6 +2,8 @@ package polimi.dima.museumdemo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -52,6 +54,12 @@ public class ListBeaconsActivity extends Activity {
     private LeDeviceListAdapter adapter;
     AssetsExtracter mTask;
     CheckVersionExtracter mCheckVersion;
+    RunDownload mDownload;
+    // Progress Dialog
+    private ProgressDialog pDialog;
+    // Progress dialog type (0 - for Horizontal progress bar)
+    public static final int progress_bar_type = 0;
+
     private ArrayList<HashMap<String, String>> mExponatsList;
 
     private JSONArray mExponats = null;
@@ -219,12 +227,64 @@ private Boolean newVersion = false;
                 showToast("Error extracting assets, closing the application...");
                 finish();
             } else {
-                new DownloadMngr();
+               mDownload = new RunDownload();
+                mDownload.execute(0);
             }
 
 
         }
     }
+    protected Dialog onCreateDialog(int id) {
+        switch (id) {
+            case progress_bar_type:
+                pDialog = new ProgressDialog(this);
+                pDialog.setMessage("Downloading file. Please wait...");
+                pDialog.setIndeterminate(false);
+                pDialog.setMax(100);
+                pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                pDialog.setCancelable(true);
+                pDialog.show();
+                return pDialog;
+            default:
+                return null;
+        }
+    }
+    //Assets Extraction
+    private class RunDownload extends AsyncTask<Integer, Integer, Boolean> {
+
+           @Override
+         protected void onPreExecute()
+         {
+        //Create a new progress dialog or something on PreExecute
+             super.onPreExecute();
+             showDialog(progress_bar_type);
+
+         }
+
+        @Override
+        protected Boolean doInBackground(Integer... params) {
+            try {
+                // Extract all assets except Menu. Overwrite existing files for debug build only.
+                new DownloadMngr();
+            } catch (Exception e) {
+                Log.e("Download","Error 0. Error when run");
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            dismissDialog(progress_bar_type);
+
+        }
+
+        protected void onProgressUpdate(String... progress) {
+            // setting progress percentage
+            pDialog.setProgress(Integer.parseInt(progress[0]));
+        }
+    }
+
 
     /**
      * Display a short toast message
@@ -401,7 +461,6 @@ private Boolean newVersion = false;
                     String target = c.getString(TAG_TARGET);
                     String type = c.getString(TAG_TYPE);
                     String model = c.getString(TAG_MODEL);
-
 
                     Log.d("Database", "Inserting...");
                     db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
