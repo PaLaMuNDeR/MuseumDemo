@@ -1,6 +1,8 @@
 package polimi.dima.museumdemo;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -109,9 +111,11 @@ public class LeDeviceListAdapter extends BaseAdapter {
                 image_value = ex.getImage();
                 //Set the image of the object
                 holder.macImageResource = image_value;
-                int image_source = mContext.getResources().getIdentifier("polimi.dima.museumdemo:drawable/" + image_value, null, null);
-                holder.macImageView.setImageResource(image_source);
+                String imagePath = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/"+image_value;
+                //int image_source = mContext.getResources().getIdentifier("polimi.dima.museumdemo:drawable/" + image_value, null, null);
+                //holder.macImageView.setImageResource(image_source);
                 //Sets that the holder is acknowledged to continue to the next activity
+                holder.macImageView.setImageDrawable(Drawable.createFromPath(imagePath));
                 holder.macContinueBool = Boolean.TRUE;
 
 

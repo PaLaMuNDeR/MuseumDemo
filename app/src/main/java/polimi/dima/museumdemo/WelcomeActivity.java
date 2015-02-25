@@ -1,8 +1,10 @@
 package polimi.dima.museumdemo;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,6 +13,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -49,13 +54,19 @@ public class WelcomeActivity extends Activity {
     private static String xml_name = "TrackingData_MarkerlessFast.xml";
     private static String target_name = "mona_target.png";
     private static String model = "mona_rotated.3gp";
-
+    private static final String READ_POI_URL = "http://expox-milano.t15.org/museum/MetaioDownload/exponats.json";
+private Boolean newVersion = false;
     private static String save_name = "";
+    CheckVersionExtracter mCheckVersion;
+
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.welcome_activity);
+// extract all the assets
+            mCheckVersion = new CheckVersionExtracter();
+            mCheckVersion.execute(0);
 
             // show progress bar button
             btnLoadImage = (Button) findViewById(R.id.btnLoadImage);
@@ -114,7 +125,11 @@ public class WelcomeActivity extends Activity {
                     startActivity(intent);
                 }
             });
-        }
+         /*   Log.d("Version Check","newVersion="+newVersion);
+            if(newVersion){
+                updateDialog();
+            }
+        */}
                     /**
                      * Showing Dialog
                      * */
@@ -229,4 +244,79 @@ public class WelcomeActivity extends Activity {
             }
 
         }
+
+    //Assets Extraction
+    private class CheckVersionExtracter extends AsyncTask<Integer, Integer, Boolean> {
+
+        //   @Override
+        //  protected void onPreExecute()
+        // {
+        //Create a new progress dialog or something on PreExecute
+        //      }
+
+        @Override
+        protected Boolean doInBackground(Integer... params) {
+            try {
+                // Extract all assets except Menu. Overwrite existing files for debug build only.
+                VersionCheck();
+            } catch (Exception e) {
+                Log.e("Database","Version Check failed. May be the server is down");
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            Log.d("Version Check","newVersion="+newVersion);
+            if(newVersion){
+                updateDialog();
+            }
+
+        }
+    }
+    private void VersionCheck() {
+        DatabaseHandler db = new DatabaseHandler(WelcomeActivity.this);
+        JSONParser jParser = new JSONParser();
+        // Feed the beast our comments url, and it spits us
+        // back a JSON object. Boo-yeah Jerome.
+        JSONObject json = jParser.getJSONFromUrl(READ_POI_URL);
+        try {
+            int version = json.getInt("version");
+            Log.d("Database", "JSON version: " + version);
+            VersionVerifier vf = db.getLastVersion();
+            Log.d("Database", "Old version: " + vf.version);
+
+            if (version != vf.version) {
+                Log.d("Database","Version Check is complete. The version is different");
+
+            newVersion=true;
+                Log.d("Version Check","newVersion="+newVersion);
+            }
+            else{
+                Log.d("Database","Version Check is complete. The version is NOT different");
+            newVersion=false;
+                Log.d("Version Check","newVersion="+newVersion);
+
+            }
+        } catch (Exception e) {
+            Log.e("Database", "Error 2. Could not check the version");
+        }
+    }
+   private void updateDialog(){
+       AlertDialog.Builder builder = new AlertDialog.Builder(this);
+       builder
+               .setTitle("Erase hard drive")
+               .setMessage("Are you sure?")
+               .setIcon(android.R.drawable.ic_dialog_alert)
+               .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                   public void onClick(DialogInterface dialog, int which) {
+                       //Yes button clicked, do something
+                       Toast.makeText(WelcomeActivity.this, "Yes button pressed",
+                               Toast.LENGTH_SHORT).show();
+                   }
+               })
+               .setNegativeButton("No", null)						//Do nothing on no
+               .show();
+    }
     }

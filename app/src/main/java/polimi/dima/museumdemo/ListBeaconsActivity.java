@@ -1,7 +1,9 @@
 package polimi.dima.museumdemo;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -49,6 +51,7 @@ public class ListBeaconsActivity extends Activity {
     private BeaconManager beaconManager;
     private LeDeviceListAdapter adapter;
     AssetsExtracter mTask;
+    CheckVersionExtracter mCheckVersion;
     private ArrayList<HashMap<String, String>> mExponatsList;
 
     private JSONArray mExponats = null;
@@ -64,16 +67,17 @@ public class ListBeaconsActivity extends Activity {
     private static final String TAG_TARGET = "target";
     private static final String TAG_TYPE = "type";
     private static final String TAG_MODEL = "model";
-
+private Boolean newVersion = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        // extract all the assets
-        mTask = new AssetsExtracter();
-        mTask.execute(0);
+        // Check the Version
+        mCheckVersion = new CheckVersionExtracter();
+        mCheckVersion.execute(0);
+
 
         // Configure device list.
         adapter = new LeDeviceListAdapter(ListBeaconsActivity.this);
@@ -150,6 +154,36 @@ public class ListBeaconsActivity extends Activity {
 
         super.onStop();
     }
+    //Assets Extraction
+    private class CheckVersionExtracter extends AsyncTask<Integer, Integer, Boolean> {
+
+        //   @Override
+        //  protected void onPreExecute()
+        // {
+        //Create a new progress dialog or something on PreExecute
+        //      }
+
+        @Override
+        protected Boolean doInBackground(Integer... params) {
+            try {
+                // Extract all assets except Menu. Overwrite existing files for debug build only.
+                VersionCheck();
+            } catch (Exception e) {
+                Log.e("Database","Version Check failed. May be the server is down");
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            Log.d("Version Check","newVersion="+newVersion);
+            if(newVersion){
+                updateDialog();
+            }
+
+        }
+    }
 
     //Assets Extraction
     private class AssetsExtracter extends AsyncTask<Integer, Integer, Boolean> {
@@ -184,7 +218,11 @@ public class ListBeaconsActivity extends Activity {
                 MetaioDebug.log(Log.ERROR, "Error extracting assets, closing the application...");
                 showToast("Error extracting assets, closing the application...");
                 finish();
+            } else {
+                new DownloadMngr();
             }
+
+
         }
     }
 
@@ -256,6 +294,58 @@ public class ListBeaconsActivity extends Activity {
             }
         };
     }
+    private void VersionCheck() {
+        DatabaseHandler db = new DatabaseHandler(ListBeaconsActivity.this);
+        JSONParser jParser = new JSONParser();
+        // Feed the beast our comments url, and it spits us
+        // back a JSON object. Boo-yeah Jerome.
+        JSONObject json = jParser.getJSONFromUrl(READ_POI_URL);
+        try {
+            int version = json.getInt("version");
+            Log.d("Database", "JSON version: " + version);
+            VersionVerifier vf = db.getLastVersion();
+            Log.d("Database", "Old version: " + vf.version);
+
+            if (version != vf.version) {
+                Log.d("Database","Version Check is complete. The version is different");
+
+                newVersion=true;
+                Log.d("Version Check","newVersion="+newVersion);
+            }
+            else{
+                Log.d("Database","Version Check is complete. The version is NOT different");
+                newVersion=false;
+                Log.d("Version Check","newVersion="+newVersion);
+
+            }
+        } catch (Exception e) {
+            Log.e("Database", "Error 2. Could not check the version");
+        }
+    }
+    private void updateDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder
+                .setTitle("Update")
+                .setMessage("The museum has new exponats. Do you want to update the app?")
+                .setIcon(R.drawable.ic_launcher)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // extract all the assets
+                        mTask = new AssetsExtracter();
+                        mTask.execute(0);
+
+                        //Yes button clicked, do something
+                        Toast.makeText(ListBeaconsActivity.this, "Yes button pressed",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("No", null)
+                			//Do nothing on no
+                .show();
+    }
+
+
+
     private void JSONParserToDB(){
         DatabaseHandler db = new DatabaseHandler(ListBeaconsActivity.this);
         // Hashmap for ListView
@@ -289,6 +379,7 @@ public class ListBeaconsActivity extends Activity {
         try {
 
             //JSONObject json = new JSONObject(string);
+            boolean isFirstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("isFirstRun", true);
 
             int version = json.getInt("version");
 
@@ -296,48 +387,111 @@ public class ListBeaconsActivity extends Activity {
     //        Log.d("Database","Dropping database...");
       //      db.onUpgrade(db.getWritableDatabase(),db.getDATABASE_VERSION(),version);
         //    Log.d("Database","Creating database...");
+            if(isFirstRun) {
+                mExponats = json.getJSONArray("exponats");
+                for (int i = 0; i < mExponats.length(); i++) {
+                    JSONObject c = mExponats.getJSONObject(i);
 
-            mExponats = json.getJSONArray("exponats");
-            for (int i = 0; i < mExponats.length(); i++) {
-                JSONObject c = mExponats.getJSONObject(i);
-
-                // gets the content of each tag
-                String name = c.getString(TAG_NAME);
-                String description = c.getString(TAG_DESCRIPTION);
-                String image = c.getString(TAG_IMAGE);
-                String beaconMac = c.getString(TAG_BEACON_MAC);
-                String trackingData = c.getString(TAG_TRACKING_DATA);
-                String target = c.getString(TAG_TARGET);
-                String type = c.getString(TAG_TYPE);
-                String model = c.getString(TAG_MODEL);
-
-
-                Log.d("Database", "Inserting...");
-                db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
-                // creating new HashMap
-                HashMap<String, String> map = new HashMap<String, String>();
-
-                // map.put(TAG_POI_ID, poi_id);
-                map.put(TAG_NAME, name);
-                map.put(TAG_DESCRIPTION, description);
-                map.put(TAG_IMAGE, image);
-                map.put(TAG_BEACON_MAC, beaconMac);
-                map.put(TAG_TRACKING_DATA, trackingData);
-                map.put(TAG_TARGET, target);
-                map.put(TAG_TYPE, type);
-                map.put(TAG_MODEL, model);
-
-                // adding HashList to ArrayList
-                mExponatsList.add(map);
-
-                // annndddd, our JSON data is up to date same with our array
-                // list
-                //TODO Remove
-                Log.d("hashmap", "One more added");
+                    // gets the content of each tag
+                    String name = c.getString(TAG_NAME);
+                    String description = c.getString(TAG_DESCRIPTION);
+                    String image = c.getString(TAG_IMAGE);
+                    String beaconMac = c.getString(TAG_BEACON_MAC);
+                    String trackingData = c.getString(TAG_TRACKING_DATA);
+                    String target = c.getString(TAG_TARGET);
+                    String type = c.getString(TAG_TYPE);
+                    String model = c.getString(TAG_MODEL);
 
 
+                    Log.d("Database", "Inserting...");
+                    db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
+                    // creating new HashMap
+                    HashMap<String, String> map = new HashMap<String, String>();
+
+                    // map.put(TAG_POI_ID, poi_id);
+                    map.put(TAG_NAME, name);
+                    map.put(TAG_DESCRIPTION, description);
+                    map.put(TAG_IMAGE, image);
+                    map.put(TAG_BEACON_MAC, beaconMac);
+                    map.put(TAG_TRACKING_DATA, trackingData);
+                    map.put(TAG_TARGET, target);
+                    map.put(TAG_TYPE, type);
+                    map.put(TAG_MODEL, model);
+
+                    // adding HashList to ArrayList
+                    mExponatsList.add(map);
+
+                    // annndddd, our JSON data is up to date same with our array
+                    // list
+                    Log.d("hashmap", "One more added");
+                }
+                db.addVersion(new VersionVerifier(version));
+                Log.d("Database", "New version added: " + version);
             }
+            else {
+                Log.d("Database", "JSON version: " + version);
+                VersionVerifier vf = db.getLastVersion();
+                Log.d("Database", "Old version: " + vf.version);
 
+                if (version != vf.version) {
+
+                        //Cleans the database
+                        db.flushOnNewVersion();
+                        Log.d("Database", "Database flushed");
+                        //populates it again
+                        mExponats = json.getJSONArray("exponats");
+                        for (int i = 0; i < mExponats.length(); i++) {
+                            JSONObject c = mExponats.getJSONObject(i);
+
+                            // gets the content of each tag
+                            String name = c.getString(TAG_NAME);
+                            String description = c.getString(TAG_DESCRIPTION);
+                            String image = c.getString(TAG_IMAGE);
+                            String beaconMac = c.getString(TAG_BEACON_MAC);
+                            String trackingData = c.getString(TAG_TRACKING_DATA);
+                            String target = c.getString(TAG_TARGET);
+                            String type = c.getString(TAG_TYPE);
+                            String model = c.getString(TAG_MODEL);
+
+
+                            Log.d("Database", "Inserting...");
+                            db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
+                            // creating new HashMap
+                            HashMap<String, String> map = new HashMap<String, String>();
+
+                            // map.put(TAG_POI_ID, poi_id);
+                            map.put(TAG_NAME, name);
+                            map.put(TAG_DESCRIPTION, description);
+                            map.put(TAG_IMAGE, image);
+                            map.put(TAG_BEACON_MAC, beaconMac);
+                            map.put(TAG_TRACKING_DATA, trackingData);
+                            map.put(TAG_TARGET, target);
+                            map.put(TAG_TYPE, type);
+                            map.put(TAG_MODEL, model);
+
+                            // adding HashList to ArrayList
+                            mExponatsList.add(map);
+
+                            // annndddd, our JSON data is up to date same with our array
+                            // list
+                            //TODO Remove
+                            Log.d("hashmap", "One more added");
+                        }
+                        db.addVersion(new VersionVerifier(version));
+                        Log.d("Database", "New version added: " + version);
+                    }
+
+
+                }
+
+
+
+
+
+            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("isFirstRun", false)
+                    .apply();
         } catch (JSONException e) {
             e.printStackTrace();
 
@@ -346,7 +500,7 @@ public class ListBeaconsActivity extends Activity {
 
 
         Log.d("hashmap", mExponatsList.toString());
-// Reading all contacts
+// Reading all exponats
         Log.d("Database", "Reading all exponats..");
         List<Exponat> exponats = db.getAllExponats();
         for (Exponat ex : exponats) {
@@ -392,7 +546,6 @@ public class ListBeaconsActivity extends Activity {
         }
         return json;
     }
-
 
 
 }
