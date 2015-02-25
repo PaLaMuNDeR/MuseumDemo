@@ -1,14 +1,11 @@
 package polimi.dima.museumdemo;
 
 import android.app.Activity;
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -29,7 +26,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -57,6 +53,7 @@ public class ListBeaconsActivity extends Activity {
 
     private JSONArray mExponats = null;
     private HashMap<String,Integer> mVersion;
+    private static final String READ_POI_URL = "http://expox-milano.t15.org/museum/MetaioDownload/exponats.json";
 
 
     private static final String TAG_NAME = "name";
@@ -76,7 +73,7 @@ public class ListBeaconsActivity extends Activity {
 
         // extract all the assets
         mTask = new AssetsExtracter();
-       // mTask.execute(0);
+        mTask.execute(0);
 
         // Configure device list.
         adapter = new LeDeviceListAdapter(ListBeaconsActivity.this);
@@ -109,18 +106,6 @@ public class ListBeaconsActivity extends Activity {
                 });
             }
         });
-    }
-
-    public void checkFirstRun() {
-        boolean isFirstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("isFirstRun", true);
-        if (isFirstRun){
-            // Place your dialog code here to display the dialog
-
-            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
-                    .edit()
-                    .putBoolean("isFirstRun", false)
-                    .apply();
-        }
     }
 
     @Override
@@ -179,28 +164,13 @@ public class ListBeaconsActivity extends Activity {
         protected Boolean doInBackground(Integer... params) {
             try {
                 // Extract all assets except Menu. Overwrite existing files for debug build only.
-                //String imagePath = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/";
-               // String path = getApplicationContext().getFilesDir().getAbsolutePath()+"/metaioAssets";
-                //File f = new File(path);
-               // f.mkdirs();
-
-
-                String[] ignoreList = {""};
-
-            //    AssetsManager.getAssetPath(getApplicationContext(),imagePath);
-                AssetsManager.getAbsolutePath();
-                AssetsManager.extractAllAssets(getApplicationContext(), "",true);
-
-                Log.d("Extract","Extracted");
-
+                AssetsManager.extractAllAssets(getApplicationContext(), "", BuildConfig.DEBUG);
             } catch (IOException e) {
                 MetaioDebug.printStackTrace(Log.ERROR, e);
-                Log.d("Extract","Extracted");
-
                 return false;
             }
             try {
-               JSONParserToDB();
+                JSONParserToDB();
             } catch (Exception e) {
                 Log.e("Error with the JSON Parser",
                         "Error when parsing the JSON, may be it is not formatted properly.");
@@ -227,6 +197,7 @@ public class ListBeaconsActivity extends Activity {
         Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT);
         toast.show();
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -285,9 +256,6 @@ public class ListBeaconsActivity extends Activity {
             }
         };
     }
-
-
-
     private void JSONParserToDB(){
         DatabaseHandler db = new DatabaseHandler(ListBeaconsActivity.this);
         // Hashmap for ListView
@@ -308,125 +276,68 @@ public class ListBeaconsActivity extends Activity {
         Log.d("Database","Creating new db...");*/
 
 
-
-
-
-
-
-
-
         mExponatsList = new ArrayList<HashMap<String, String>>();
         //   mVersion = new HashMap<String, Integer>();
 
         //  ArrayList<HashMap<String, String>> exponatList = new ArrayList<HashMap<String, String>>();
-        String string = loadJSONFromAsset();
+       // String string = loadJSONFromAsset();
+        // it's time to power up the J parser
+        JSONParser jParser = new JSONParser();
+        // Feed the beast our comments url, and it spits us
+        // back a JSON object. Boo-yeah Jerome.
+        JSONObject json = jParser.getJSONFromUrl(READ_POI_URL);
         try {
 
-            JSONObject json = new JSONObject(string);
+            //JSONObject json = new JSONObject(string);
 
-            boolean isFirstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("isFirstRun", true);
             int version = json.getInt("version");
-            if(isFirstRun) {
-                mExponats = json.getJSONArray("exponats");
-                for (int i = 0; i < mExponats.length(); i++) {
-                    JSONObject c = mExponats.getJSONObject(i);
-
-                    // gets the content of each tag
-                    String name = c.getString(TAG_NAME);
-                    String description = c.getString(TAG_DESCRIPTION);
-                    String image = c.getString(TAG_IMAGE);
-                    String beaconMac = c.getString(TAG_BEACON_MAC);
-                    String trackingData = c.getString(TAG_TRACKING_DATA);
-                    String target = c.getString(TAG_TARGET);
-                    String type = c.getString(TAG_TYPE);
-                    String model = c.getString(TAG_MODEL);
 
 
-                    Log.d("Database", "Inserting...");
-                    db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
-                    // creating new HashMap
-                    HashMap<String, String> map = new HashMap<String, String>();
+    //        Log.d("Database","Dropping database...");
+      //      db.onUpgrade(db.getWritableDatabase(),db.getDATABASE_VERSION(),version);
+        //    Log.d("Database","Creating database...");
 
-                    // map.put(TAG_POI_ID, poi_id);
-                    map.put(TAG_NAME, name);
-                    map.put(TAG_DESCRIPTION, description);
-                    map.put(TAG_IMAGE, image);
-                    map.put(TAG_BEACON_MAC, beaconMac);
-                    map.put(TAG_TRACKING_DATA, trackingData);
-                    map.put(TAG_TARGET, target);
-                    map.put(TAG_TYPE, type);
-                    map.put(TAG_MODEL, model);
+            mExponats = json.getJSONArray("exponats");
+            for (int i = 0; i < mExponats.length(); i++) {
+                JSONObject c = mExponats.getJSONObject(i);
 
-                    // adding HashList to ArrayList
-                    mExponatsList.add(map);
-
-                    // annndddd, our JSON data is up to date same with our array
-                    // list
-                    Log.d("hashmap", "One more added");
-                }
-                db.addVersion(new VersionVerifier(version));
-                Log.d("Database", "New version added: " + version);
-            }
-                else{
-                Log.d("Database", "JSON version: " + version);
-                VersionVerifier vf = db.getLastVersion();
-                Log.d("Database", "Old version: " + vf.version);
-                if(version!=vf.version) {
-                    //Cleans the database
-                    db.flushOnNewVersion();
-                    Log.d("Database","Database flushed");
-                    //populates it again
-                    mExponats = json.getJSONArray("exponats");
-                    for (int i = 0; i < mExponats.length(); i++) {
-                        JSONObject c = mExponats.getJSONObject(i);
-
-                        // gets the content of each tag
-                        String name = c.getString(TAG_NAME);
-                        String description = c.getString(TAG_DESCRIPTION);
-                        String image = c.getString(TAG_IMAGE);
-                        String beaconMac = c.getString(TAG_BEACON_MAC);
-                        String trackingData = c.getString(TAG_TRACKING_DATA);
-                        String target = c.getString(TAG_TARGET);
-                        String type = c.getString(TAG_TYPE);
-                        String model = c.getString(TAG_MODEL);
+                // gets the content of each tag
+                String name = c.getString(TAG_NAME);
+                String description = c.getString(TAG_DESCRIPTION);
+                String image = c.getString(TAG_IMAGE);
+                String beaconMac = c.getString(TAG_BEACON_MAC);
+                String trackingData = c.getString(TAG_TRACKING_DATA);
+                String target = c.getString(TAG_TARGET);
+                String type = c.getString(TAG_TYPE);
+                String model = c.getString(TAG_MODEL);
 
 
-                        Log.d("Database", "Inserting...");
-                        db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
-                        // creating new HashMap
-                        HashMap<String, String> map = new HashMap<String, String>();
+                Log.d("Database", "Inserting...");
+                db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));
+                // creating new HashMap
+                HashMap<String, String> map = new HashMap<String, String>();
 
-                        // map.put(TAG_POI_ID, poi_id);
-                        map.put(TAG_NAME, name);
-                        map.put(TAG_DESCRIPTION, description);
-                        map.put(TAG_IMAGE, image);
-                        map.put(TAG_BEACON_MAC, beaconMac);
-                        map.put(TAG_TRACKING_DATA, trackingData);
-                        map.put(TAG_TARGET, target);
-                        map.put(TAG_TYPE, type);
-                        map.put(TAG_MODEL, model);
+                // map.put(TAG_POI_ID, poi_id);
+                map.put(TAG_NAME, name);
+                map.put(TAG_DESCRIPTION, description);
+                map.put(TAG_IMAGE, image);
+                map.put(TAG_BEACON_MAC, beaconMac);
+                map.put(TAG_TRACKING_DATA, trackingData);
+                map.put(TAG_TARGET, target);
+                map.put(TAG_TYPE, type);
+                map.put(TAG_MODEL, model);
 
-                        // adding HashList to ArrayList
-                        mExponatsList.add(map);
+                // adding HashList to ArrayList
+                mExponatsList.add(map);
 
-                        // annndddd, our JSON data is up to date same with our array
-                        // list
-                        Log.d("hashmap", "One more added");
-                    }
-                    db.addVersion(new VersionVerifier(version));
-                    Log.d("Database", "New version added: " + version);
-                }
+                // annndddd, our JSON data is up to date same with our array
+                // list
+                //TODO Remove
+                Log.d("hashmap", "One more added");
 
 
             }
 
-
-
-
-            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
-                    .edit()
-                    .putBoolean("isFirstRun", false)
-                    .apply();
         } catch (JSONException e) {
             e.printStackTrace();
 
@@ -435,7 +346,7 @@ public class ListBeaconsActivity extends Activity {
 
 
         Log.d("hashmap", mExponatsList.toString());
-// Reading all exponats
+// Reading all contacts
         Log.d("Database", "Reading all exponats..");
         List<Exponat> exponats = db.getAllExponats();
         for (Exponat ex : exponats) {

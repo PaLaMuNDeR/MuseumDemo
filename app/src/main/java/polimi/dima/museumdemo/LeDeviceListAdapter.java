@@ -47,7 +47,7 @@ public class LeDeviceListAdapter extends BaseAdapter {
         this.inflater = LayoutInflater.from(context);
         this.beacons = new ArrayList<Beacon>();
         mContext = this.inflater.getContext();
-        Parser();
+
     }
 
     public void replaceWith(Collection<Beacon> newBeacons) {
@@ -156,70 +156,6 @@ public class LeDeviceListAdapter extends BaseAdapter {
             macId = 0;
         }
 
-    }
-
-    void Parser() {
-
-        mExponatsList = new ArrayList<HashMap<String, String>>();
-
-        String string = loadJSONFromAsset();
-        try {
-            JSONObject json = new JSONObject(string);
-            mExponats = json.getJSONArray("exponats");
-
-            for (int i = 0; i < mExponats.length(); i++) {
-                JSONObject c = mExponats.getJSONObject(i);
-
-                // gets the content of each tag
-                String name = c.getString(TAG_NAME);
-                String image = c.getString(TAG_IMAGE);
-                String beaconMac = c.getString(TAG_BEACON_MAC);
-
-                // creating new HashMap
-                HashMap<String, String> map = new HashMap<String, String>();
-
-                // map.put(TAG_POI_ID, poi_id);
-                map.put(TAG_NAME, name);
-                map.put(TAG_IMAGE, image);
-                map.put(TAG_BEACON_MAC, beaconMac);
-
-                // adding HashList to ArrayList
-                mExponatsList.add(map);
-
-                // annndddd, our JSON data is up to date same with our array
-                // list
-                Log.d("hashmap", "One more added");
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        Log.d("hashmap", mExponatsList.toString());
-    }
-
-    public String loadJSONFromAsset() {
-        String json = null;
-        try {
-
-            InputStream is = mContext.getAssets().open("exponats.json");
-
-            int size = is.available();
-
-            byte[] buffer = new byte[size];
-
-            is.read(buffer);
-
-            is.close();
-
-            json = new String(buffer, "UTF-8");
-
-            Log.d("Hashmap", "I read it");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-        return json;
     }
 
     public String getImage(View view) {
