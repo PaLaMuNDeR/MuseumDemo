@@ -30,20 +30,19 @@ public class DownloadMngr {
     Context mContext;
     private JSONArray mExponats = null;
     private static final String TAG_NAME = "name";
-    private static final String TAG_SAVE_NAME = "save_name";
     private static final String TAG_IMAGE = "image";
-    private static final String TAG_SAVE_IMAGE = "save_image";
     private static final String TAG_TRACKING_DATA = "trackingData";
-    private static final String TAG_SAVE_TRACKING_DATA = "save_trackingData";
     private static final String TAG_TARGET = "target";
-    private static final String TAG_SAVE_TARGET = "save_target";
     private static final String TAG_MODEL_1 = "model_1";
-    private static final String TAG_SAVE_MODEL_1 = "save_model_1";
     private static final String TAG_MODEL_2 = "model_2";
-    private static final String TAG_SAVE_MODEL_2 = "save_model_2";
     private static final String TAG_MODEL_3 = "model_3";
-    private static final String TAG_SAVE_MODEL_3 = "save_model_3";
     private static final String TAG_MODEL_4 = "model_4";
+    private static final String TAG_SAVE_TARGET = "save_target";
+    private static final String TAG_SAVE_IMAGE = "save_image";
+    private static final String TAG_SAVE_TRACKING_DATA = "save_trackingData";
+    private static final String TAG_SAVE_MODEL_1 = "save_model_1";
+    private static final String TAG_SAVE_MODEL_2 = "save_model_2";
+    private static final String TAG_SAVE_MODEL_3 = "save_model_3";
     private static final String TAG_SAVE_MODEL_4 = "save_model_4";
     // Progress dialog type (0 - for Horizontal progress bar)
     public static final int progress_bar_type = 0;
@@ -150,7 +149,7 @@ public class DownloadMngr {
                     total += count;
                     // publishing the progress....
                     // After this onProgressUpdate will be called
-                 //   publishProgress(""+(int)((total*100)/lenghtOfFile));
+                 //publishProgress(""+(int)((total*100)/lenghtOfFile));
 
                     // writing data to file
                     output.write(data, 0, count);
