@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -28,6 +29,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -74,7 +76,7 @@ public class ListBeaconsActivity extends Activity {
 
         // extract all the assets
         mTask = new AssetsExtracter();
-        mTask.execute(0);
+       // mTask.execute(0);
 
         // Configure device list.
         adapter = new LeDeviceListAdapter(ListBeaconsActivity.this);
@@ -177,9 +179,24 @@ public class ListBeaconsActivity extends Activity {
         protected Boolean doInBackground(Integer... params) {
             try {
                 // Extract all assets except Menu. Overwrite existing files for debug build only.
-                AssetsManager.extractAllAssets(getApplicationContext(), "", BuildConfig.DEBUG);
+                //String imagePath = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/";
+               // String path = getApplicationContext().getFilesDir().getAbsolutePath()+"/metaioAssets";
+                //File f = new File(path);
+               // f.mkdirs();
+
+
+                String[] ignoreList = {""};
+
+            //    AssetsManager.getAssetPath(getApplicationContext(),imagePath);
+                AssetsManager.getAbsolutePath();
+                AssetsManager.extractAllAssets(getApplicationContext(), "",true);
+
+                Log.d("Extract","Extracted");
+
             } catch (IOException e) {
                 MetaioDebug.printStackTrace(Log.ERROR, e);
+                Log.d("Extract","Extracted");
+
                 return false;
             }
             try {
@@ -210,7 +227,6 @@ public class ListBeaconsActivity extends Activity {
         Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT);
         toast.show();
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

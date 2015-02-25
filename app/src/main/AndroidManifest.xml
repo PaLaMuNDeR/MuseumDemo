@@ -38,6 +38,7 @@
             android:name="polimi.dima.museumdemo.ListBeaconsActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
+
         </activity>
         <activity
             android:name="polimi.dima.museumdemo.WelcomeActivity"

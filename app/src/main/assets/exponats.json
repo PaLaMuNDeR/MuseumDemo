@@ -1,4 +1,4 @@
-{"version":"2",
+{"version":"1",
 "exponats":
  [
     {
@@ -6,21 +6,10 @@
         "description": "The most famous painting of all times",
         "image": "exponat_1_image",
         "trackingData": "TrackingData_MarkerlessFast.xml",
-        "target": "mona_target",
-        "beaconMac": "CE:94:FB:D0:DB:16",
+        "target": "mona_target.png",
+        "beaconMac": "E3:82:A7:F7:DD:E5",
         "type": "Video",
         "model": "mona_rotated.3gp"
-    },
-    {
-        "name": "Virtual Room",
-        "description": "A room full of virtual objects",
-        "image": "virtual_room",
-        "beaconMac": "E3:82:A7:F7:DD:E5",
-        "trackingData": "TrackingData_MarkerlessFast.xml",
-        "target": "scan_target",
-        "type": "3D",
-        "model": "stuhl.obj"
     }
  ]
-
 }

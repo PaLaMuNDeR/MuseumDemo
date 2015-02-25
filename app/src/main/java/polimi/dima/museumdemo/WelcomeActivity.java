@@ -3,7 +3,7 @@ package polimi.dima.museumdemo;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.graphics.drawable.Drawable;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,13 +26,19 @@ import java.net.URLConnection;
 public class WelcomeActivity extends Activity {
 
     // button to show progress dialog
-    Button btnShowProgress;
+    Button btnLoadModel;
+    Button btnLoadTarget;
+    Button btnLoadXML;
+    Button btnLoadImage;
+    Button btnContinue;
 
     // Progress Dialog
     private ProgressDialog pDialog;
     ImageView my_image;
     // Progress dialog type (0 - for Horizontal progress bar)
     public static final int progress_bar_type = 0;
+    //The JSON file with the version
+   // private static String
 
     // File url to download
     private static String image_url = "http://expox-milano.t15.org/museum/MetaioDownload/exponat_1_image.jpg";
@@ -52,33 +58,67 @@ public class WelcomeActivity extends Activity {
             setContentView(R.layout.welcome_activity);
 
             // show progress bar button
-            btnShowProgress = (Button) findViewById(R.id.btnProgressBar);
+            btnLoadImage = (Button) findViewById(R.id.btnLoadImage);
+            btnLoadXML = (Button) findViewById(R.id.btnLoadXML);
+            btnLoadTarget = (Button) findViewById(R.id.btnLoadTarget);
+            btnLoadModel = (Button) findViewById(R.id.btnLoadModel);
             // Image view to show image after downloading
             my_image = (ImageView) findViewById(R.id.my_image);
             /**
              * Show Progress bar click event
              * */
-            btnShowProgress.setOnClickListener(new View.OnClickListener() {
+            btnLoadImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // starting new Async Task
-                    save_name=image_name;
+                    save_name = image_name;
                     new DownloadFileFromURL().execute(image_url);
-                    save_name=xml_name;
+                }
+            });
+            btnLoadXML.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // starting new Async Task
+                    save_name = xml_name;
                     new DownloadFileFromURL().execute(xml_url);
-                    save_name=target_name;
+                }
+            });
+            btnLoadTarget.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // starting new Async Task
+                    save_name = target_name;
                     new DownloadFileFromURL().execute(target_url);
-                    save_name=model;
+                }
+            });
+
+            btnLoadModel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    // starting new Async Task
+                    save_name = model;
                     new DownloadFileFromURL().execute(model_url);
 
                 }
             });
-        }
 
-        /**
-         * Showing Dialog
-         * */
-        @Override
+
+
+
+            btnContinue = (Button) findViewById(R.id.btnContinue);
+            btnContinue.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(WelcomeActivity.this, ListBeaconsActivity.class);
+                    startActivity(intent);
+                }
+            });
+        }
+                    /**
+                     * Showing Dialog
+                     * */
+            @Override
         protected Dialog onCreateDialog(int id) {
             switch (id) {
                 case progress_bar_type:
@@ -127,13 +167,13 @@ public class WelcomeActivity extends Activity {
                     InputStream input = new BufferedInputStream(url.openStream(), 8192);
 
                     //Check whether such folder already exists
-                    File folder = new File(Environment.getExternalStorageDirectory() + "/MuseumDemo");
+                    File folder = new File(Environment.getExternalStorageDirectory() + "/MuseumDemo/assets");
                     boolean success = true;
                     if (!folder.exists()) {
-                        success = folder.mkdir();
+                        success = folder.mkdirs();
                     }
                     // Output stream to write file
-                    OutputStream output = new FileOutputStream("/sdcard/MuseumDemo/"+save_name);
+                    OutputStream output = new FileOutputStream("/sdcard/MuseumDemo/assets/"+save_name);
 
                     byte data[] = new byte[1024];
 
@@ -182,9 +222,10 @@ public class WelcomeActivity extends Activity {
 
                 // Displaying downloaded image into image view
                 // Reading image path from sdcard
-                String imagePath = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/"+save_name;
+                String imagePath = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/"+save_name;
                 // setting downloaded into image view
               //  my_image.setImageDrawable(Drawable.createFromPath(imagePath));
+
             }
 
         }
