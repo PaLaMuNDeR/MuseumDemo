@@ -3,7 +3,9 @@ package polimi.dima.museumdemo;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -70,8 +72,11 @@ animatedArrowRight.setAnimatedGif(R.raw.arrow_anim,
         ImageView image_exponat = (ImageView) findViewById(R.id.exponatView);
         getActionBar().setTitle(exponat_name);
         getActionBar().setSubtitle("Get closer to the object to receive more information");
-        int id = getResources().getIdentifier("polimi.dima.museumdemo:drawable/" + image_resource, null, null);
-        image_exponat.setImageResource(id);
+
+        //int id = getResources().getIdentifier("polimi.dima.museumdemo:drawable/" + image_resource, null, null);
+        //image_exponat.setImageResource(id);
+        String imagePath = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/"+image_resource;
+        image_exponat.setImageDrawable(Drawable.createFromPath(imagePath));
         beacon = getIntent().getParcelableExtra(ListBeaconsActivity.EXTRAS_BEACON);
 
         region = new Region("regionid", beacon.getProximityUUID(), beacon.getMajor(), beacon.getMinor());

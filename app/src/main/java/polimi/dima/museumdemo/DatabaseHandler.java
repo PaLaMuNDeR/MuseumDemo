@@ -1,11 +1,14 @@
 package polimi.dima.museumdemo;
 
+import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import junit.runner.Version;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +26,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // Database Name
     private static final String DATABASE_NAME = "exponatsManager";
 
-    // Contacts table name
-    private static final String TABLE_EXPONATS = "contacts";
+    //Tables names
+    private static final String TABLE_EXPONATS = "exponats";
+    private static final String TABLE_VERSION = "version";
 
-    // Contacts Table Columns names
+    // Exponats Table Columns names
     private static final String KEY_ID = "id";
     private static final String KEY_NAME = "name";
     private static final String KEY_DESCRIPTION = "description";
@@ -36,6 +40,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_TARGET = "target";
     private static final String KEY_TYPE = "type";
     private static final String KEY_MODEL = "model";
+    private static final String KEY_VERSION = "version";
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -53,12 +58,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // Creating Tables
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String CREATE_CONTACTS_TABLE = "CREATE TABLE " + TABLE_EXPONATS + "(" +
+        String CREATE_EXPONATS_TABLE = "CREATE TABLE " + TABLE_EXPONATS + "(" +
                 KEY_ID + " INTEGER PRIMARY KEY," + KEY_NAME + " TEXT," +
                 KEY_DESCRIPTION + " TEXT," + KEY_IMAGE + " TEXT," +
                 KEY_BEACON_MAC + " TEXT," + KEY_TRACKING_DATA + " TEXT," +
                 KEY_TARGET + " TEXT," + KEY_TYPE + " TEXT," + KEY_MODEL + " TEXT" + ")";
-        db.execSQL(CREATE_CONTACTS_TABLE);
+        db.execSQL(CREATE_EXPONATS_TABLE);
+        String CREATE_VERSION_TABLE="CREATE TABLE " + TABLE_VERSION + "(" +
+                KEY_ID + " INTEGER PRIMARY KEY," + KEY_VERSION + " INTEGER" +")";
+        db.execSQL(CREATE_VERSION_TABLE);
     }
 
     // Upgrading database
@@ -66,14 +74,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_EXPONATS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VERSION);
 
-       setDATABASE_VERSION(newVersion);
-        Log.d("Database", "DB Update. Version set to: " + newVersion);
+//       setDATABASE_VERSION(newVersion);
+  //      Log.d("Database", "DB Update. Version set to: " + newVersion);
         // Create tables again
         onCreate(db);
     }
 
-    // Adding new contact
+    // Adding new exponat
     public void addExponat(Exponat exponat) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -92,8 +101,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.close(); // Closing database connection
     }
 
+    // Adding new version
+    public void addVersion(VersionVerifier versionVerifier) {
+        SQLiteDatabase db = this.getWritableDatabase();
 
-    // Getting single contact
+        ContentValues values = new ContentValues();
+        values.put(KEY_VERSION, versionVerifier.getVersion()); // Version
+
+
+        // Inserting Row
+        db.insert(TABLE_VERSION, null, values);
+        db.close(); // Closing database connection
+    }
+
+    // Getting single exponat
     public Exponat getExponat(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -108,9 +129,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         Exponat exponat = new Exponat(Integer.parseInt(cursor.getString(0)),
                 cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7), cursor.getString(8));
-        // return contact
+        db.close();
+        // return exponat
         return exponat;
     }
+
 
     // Getting All Exponats
     public List<Exponat> getAllExponats() {
@@ -119,11 +142,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String selectQuery = "SELECT  * FROM " + TABLE_EXPONATS;
 
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+                Cursor cursor = db.rawQuery(selectQuery, null);
 
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
+                // looping through all rows and adding to list
+                if (cursor.moveToFirst()) {
+                    do {
                 Exponat exponat = new Exponat();
                 exponat.setId(Integer.parseInt(cursor.getString(0)));
                 exponat.setName(cursor.getString(1));
@@ -135,19 +158,38 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 exponat.setType(cursor.getString(7));
                 exponat.setModel(cursor.getString(8));
 
-                // Adding contact to list
+                // Adding exponat  to list
                 exponatList.add(exponat);
             } while (cursor.moveToNext());
         }
 
-        // return contact list
+        // return exponat list
         return exponatList;
+    }
+
+    // Getting Last version
+    public VersionVerifier getLastVersion() {
+        //SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String selectQuery = "SELECT * FROM " + TABLE_VERSION + " ORDER BY " + KEY_ID +" DESC LIMIT 1";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        VersionVerifier versionVerifier = new VersionVerifier();
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+        versionVerifier.setId(Integer.parseInt(cursor.getString(0)));
+        versionVerifier.setVersion(Integer.parseInt(cursor.getString(1)));
+        } while (cursor.moveToNext());
+}
+        return versionVerifier;
     }
 
 
 
-// Getting contacts Count
-    public int getContactsCount() {
+// Getting exponat Count
+    public int getExponatsCount() {
         String countQuery = "SELECT  * FROM " + TABLE_EXPONATS;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
@@ -155,8 +197,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         // return count
         return cursor.getCount();
-    }    // Updating single contact
+    }
 
+     // Updating single exponat
     public int updateExponat(Exponat exponat) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -175,11 +218,24 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 new String[] { String.valueOf(exponat.getId()) });
     }
 
-    // Deleting single contact
+    // Deleting single exponat
     public void deleteExponat(Exponat exponat) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_EXPONATS, KEY_ID + " = ?",
                 new String[] { String.valueOf(exponat.getId()) });
         db.close();
+    }
+
+    //New version
+    public void flushOnNewVersion() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        // Drop older table if existed
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_EXPONATS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VERSION);
+
+//       setDATABASE_VERSION(newVersion);
+        //      Log.d("Database", "DB Update. Version set to: " + newVersion);
+        // Create tables again
+        onCreate(db);
     }
 }
