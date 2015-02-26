@@ -128,6 +128,7 @@ public class LeDeviceListAdapter extends BaseAdapter {
                         Utils.computeAccuracy(beacon)));
                 int image_source = mContext.getResources().getIdentifier("polimi.dima.museumdemo:drawable/beacon_gray", null, null);
                 holder.macImageView.setImageResource(image_source);
+                holder.descriptionTextView.setText("");
                 holder.macContinueBool = Boolean.FALSE;
             }
         }

@@ -74,7 +74,7 @@ public class MetaioActivity extends ARViewActivity {
         } catch (Exception e) {
             Log.e("Error", "Error when extracting from db the assets");
         }
-        Log.d("model", "TrackingData=" + trackingData + " Target=" + target + " Type=" + model + " Model");
+        Log.d("model", "TrackingData=" + trackingData + " Target=" + target + " Type=" + type + " Model=" + model);
         getActionBar().setTitle(name);
 
         mMoviePlane = null;
@@ -112,7 +112,7 @@ public class MetaioActivity extends ARViewActivity {
        // AssetsManager.getAssetPath(getApplicationContext(),imagePath);
 
         String trackingConfigFile = AssetsManager.getAssetPath(getApplicationContext(), trackingData);
-               String trackingFile = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/TrackingData_MarkerlessFast.xml";
+               String trackingFile = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/" + trackingData;
         Log.v("Assets", "Load " + trackingConfigFile);
         // Assigning tracking configuration
         boolean result1 = metaioSDK.setTrackingConfiguration(trackingFile);
@@ -123,10 +123,13 @@ public class MetaioActivity extends ARViewActivity {
             //TODO new
            // model = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/"+model;
            // String imgPath = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/";
-            AssetsManager.getAssetPath(getApplicationContext(),Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/");
+/*
+            AssetsManager.getAssetPath(getApplicationContext(),Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/" + model);
             File filepath =
                     AssetsManager.getAssetPathAsFile(getApplicationContext(),
                             model);
+                            */
+           File filepath = new File(Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/"+model);
             if (filepath != null) {
                 mObject = metaioSDK.createGeometry(filepath);
                 if (mObject != null) {
@@ -147,7 +150,7 @@ public class MetaioActivity extends ARViewActivity {
             //model = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/"+model;
             //String imgPath = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/";
           //  String imgPath = Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/mona_rotated.3gp";
-            final File moviePath = new File(Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/mona_rotated.3gp");
+            final File moviePath = new File(Environment.getExternalStorageDirectory().toString() + "/MuseumDemo/assets/"+model);
 
         //    AssetsManager.getAssetPath(getApplicationContext(),imgPath);
 //                    AssetsManager.getAssetPathAsFile(getApplicationContext(), model);

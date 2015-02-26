@@ -617,7 +617,10 @@ public class ListBeaconsActivity extends Activity {
 
             //Check whether such folder already exists
             File folder = new File(Environment.getExternalStorageDirectory() + "/MuseumDemo/assets");
-
+            boolean success = true;
+            if (!folder.exists()) {
+                success = folder.mkdirs();
+            }
             // Output stream to write file
             OutputStream output = new FileOutputStream("/sdcard/MuseumDemo/assets/" + saved);
 
