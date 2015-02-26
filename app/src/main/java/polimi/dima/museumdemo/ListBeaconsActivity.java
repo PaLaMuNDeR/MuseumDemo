@@ -382,9 +382,6 @@ public class ListBeaconsActivity extends Activity {
                         mTask = new AssetsExtracter();
                         mTask.execute(0);
 
-                        //Yes button clicked, do something
-                        Toast.makeText(ListBeaconsActivity.this, "Yes button pressed",
-                                Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("No", null)
