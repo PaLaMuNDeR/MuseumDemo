@@ -72,10 +72,11 @@ public class ListBeaconsActivity extends Activity {
     private ArrayList<HashMap<String, String>> mExponatsList;
 
     private JSONArray mExponats = null;
-    private static final String READ_POI_URL = "http://expox-milano.t15.org/museum/MetaioDownload/exponats.json";
+    private static final String READ_POI_URL = "http://expox-milano.com/museum/exponats.php";
 
     private static final String TAG_NAME = "name";
     private static final String TAG_DESCRIPTION = "description";
+    private static final String TAG_VERSION = "version";
     private static final String TAG_IMAGE = "image";
     private static final String TAG_BEACON_MAC = "beaconMac";
     private static final String TAG_TRACKING_DATA = "trackingData";
@@ -236,7 +237,7 @@ public class ListBeaconsActivity extends Activity {
                 JSONParserToDB();
             } catch (Exception e) {
                 Log.e("Error with the JSON Parser",
-                        "Error when parsing the JSON, may be it is not formatted properly.");
+                        "Error when parsing the JSON may be it's not proper format");
             }
             return true;
         }
@@ -349,7 +350,7 @@ public class ListBeaconsActivity extends Activity {
         // back a JSON object. Boo-yeah Jerome.
         JSONObject json = jParser.getJSONFromUrl(READ_POI_URL);
         try {
-            int version = json.getInt("version");
+            int version = json.getInt(TAG_VERSION);
             Log.d("Database", "JSON version: " + version);
             VersionVerifier vf = db.getLastVersion();
             Log.d("Database", "Old version: " + vf.version);
@@ -378,7 +379,7 @@ public class ListBeaconsActivity extends Activity {
                 .setIcon(R.drawable.ic_launcher)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // extract all the assets
+                        // Extract all the assets
                         mTask = new AssetsExtracter();
                         mTask.execute(0);
 
@@ -464,7 +465,6 @@ public class ListBeaconsActivity extends Activity {
                         String target = c.getString(TAG_TARGET);
                         String type = c.getString(TAG_TYPE);
                         String model = c.getString(TAG_MODEL);
-
 
                         Log.d("Database", "Inserting...");
                         db.addExponat(new Exponat(name, description, image, beaconMac, trackingData, target, type, model));

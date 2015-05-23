@@ -24,7 +24,7 @@ import java.net.URLConnection;
  * Created by Marti on 25/02/2015.
  */
 public class DownloadMngr {
-    private static final String READ_POI_URL = "http://expox-milano.t15.org/museum/MetaioDownload/exponats.json";
+    private static final String READ_POI_URL = "http://expox-milano.com/museum/MetaioDownload/exponats.json";
     private static String saving_name = "this.jpg";
     private ProgressDialog pDialog;
     Context mContext;
@@ -70,43 +70,43 @@ public class DownloadMngr {
 
                 String image = c.getString(TAG_IMAGE);
                 String save_image = c.getString(TAG_SAVE_IMAGE);
-                //saving_name = save_image;
+                saving_name = save_image;
                 Log.d("Download","Downloading image...");
                 DownloadFileFromURL(save_image,image);
-/*
+
                 String trackingData = c.getString(TAG_TRACKING_DATA);
                 String save_trackingData = c.getString(TAG_SAVE_TRACKING_DATA);
                 Log.d("Download","Download Tracking");
-            //    DownloadFileFromURL(trackingData,save_trackingData);
+                DownloadFileFromURL(trackingData,save_trackingData);
 
                 String target = c.getString(TAG_TARGET);
                 String save_target = c.getString(TAG_SAVE_TARGET);
                 Log.d("Download","Download Target");
-              //  DownloadFileFromURL(target,save_target);
+                DownloadFileFromURL(target,save_target);
 
                 String model_1 = c.getString(TAG_MODEL_1);
                 String save_model_1 = c.getString(TAG_SAVE_MODEL_1);
                 Log.d("Download","Download Model 1");
-                //DownloadFileFromURL(model_1,save_model_1);
+                DownloadFileFromURL(model_1,save_model_1);
 
                 String model_2 = c.getString(TAG_MODEL_2);
                 String save_model_2 = c.getString(TAG_SAVE_MODEL_2);
                 Log.d("Download","Download Model 2");
-                //DownloadFileFromURL(model_2,save_model_2);
+                DownloadFileFromURL(model_2,save_model_2);
 
 
                 String model_3 = c.getString(TAG_MODEL_3);
                 String save_model_3 = c.getString(TAG_SAVE_MODEL_3);
                 Log.d("Download","Download Model 3");
-                //DownloadFileFromURL(model_3,save_model_3);
+                DownloadFileFromURL(model_3,save_model_3);
 
 
                 String model_4 = c.getString(TAG_MODEL_4);
                 String save_model_4 = c.getString(TAG_SAVE_MODEL_4);
                 Log.d("Download","Download Model 4");
-               // DownloadFileFromURL(model_4,save_model_4);
+                DownloadFileFromURL(model_4,save_model_4);
 
-*/
+
             }
         } catch (Exception e) {
             Log.e("Download", "Error 1. Error in Download Resources");
